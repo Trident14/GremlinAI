@@ -13,6 +13,11 @@ Built for the [Meta Global AI Developer Hackathon](https://cerebralvalley.ai/e/m
 - Streams the live browser preview and agent activity to the workspace over WebSockets.
 - Generates downloadable HTML and PDF UAT sign-off reports.
 - Tests the login journey by default; opt into pre-authentication only when the login screen is out of scope.
+### Model Architecture
+This system utilizes a dual-model orchestration pattern:
+* **Fast Model:** Optimized for low-latency text generation and quick completions.
+* **Decision/Vision Model:** For vision based decision making.
+      
 
 ## Architecture
 
