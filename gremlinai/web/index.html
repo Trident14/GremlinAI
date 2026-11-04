@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GremlinAI — Autonomous UAT Platform</title>
+<link rel="stylesheet" href="/static/styles.css">
+<link rel="stylesheet" href="/static/polish.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="apple-theme">
+
+<!-- ── Apple-style Glass Top Navigation Bar ── -->
+<header class="topbar">
+  <div class="topbar-content">
+    <div class="topbar-left">
+      <div class="brand">
+        <svg class="brand-logo" viewBox="0 0 40 40" aria-hidden="true" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gremlin-face" x1="8" y1="7" x2="32" y2="36" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#6D7CFF"/><stop offset="1" stop-color="#3155F6"/>
+            </linearGradient>
+          </defs>
+          <path d="M12.4 15.6 5.8 8.9c-.8-.8.1-2.1 1.1-1.7l10 3.4M27.6 15.6l6.6-6.7c.8-.8-.1-2.1-1.1-1.7l-10 3.4" fill="#8390FF" stroke="#3155F6" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M8.5 20.1c0-7.9 5-12.6 11.5-12.6s11.5 4.7 11.5 12.6v6.7c0 6.6-4.6 9.8-11.5 9.8S8.5 33.4 8.5 26.8v-6.7Z" fill="url(#gremlin-face)"/>
+          <path d="M11.5 19.2c1.4-2.8 4.7-4.5 8.5-4.5s7.1 1.7 8.5 4.5" stroke="#BFC7FF" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
+          <ellipse cx="15.2" cy="23" rx="4.15" ry="4.55" fill="white"/>
+          <ellipse cx="24.8" cy="23" rx="4.15" ry="4.55" fill="white"/>
+          <circle cx="15.9" cy="23.7" r="1.9" fill="#111A48"/>
+          <circle cx="24.1" cy="23.7" r="1.9" fill="#111A48"/>
+          <circle cx="16.55" cy="23.05" r=".65" fill="white"/>
+          <circle cx="24.75" cy="23.05" r=".65" fill="white"/>
+          <path d="M17.1 30c1.75 1.25 4.05 1.25 5.8 0" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-title">GremlinAI</span>
+        <span class="brand-pill">Autonomous UAT</span>
+      </div>
+    </div>
+
+    <!-- Active run summary pill (visible during execution) -->
+    <div class="topbar-center" id="topbar-summary" style="display:none;">
+      <span class="active-url-badge" id="summary-url">http://localhost:5001</span>
+      <span class="summary-divider">•</span>
+      <span class="summary-status-badge" id="summary-step-info">Executing...</span>
+    </div>
+
+    <div class="topbar-right">
+      <div class="provider-chip" id="provider-badge" title="Active AI provider & models">
+        <span class="provider-indicator"></span>
+        <span id="provider-name">Loading…</span>
+      </div>
+      <div class="status-chip idle" id="status-pill">
+        <span class="status-dot"></span>
+        <span id="status-text">Ready</span>
+      </div>
+      <button class="icon-button" id="config-toggle-btn" onclick="toggleConfigPanel()" title="Toggle test configuration">
+        <span>⚙️</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ── Main Workspace Container ── -->
+<div class="app-container">
+
+  <!-- ── Alert Banner (Shows when AI is stuck or LLM fails) ── -->
+  <div class="apple-alert-banner" id="error-banner" style="display:none;">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-content">
+      <strong id="alert-title">Execution Stopped</strong>
+      <span id="alert-desc">AI agent detected stagnation or LLM provider stopped responding.</span>
+    </div>
+    <button class="alert-dismiss" onclick="dismissAlert()">&times;</button>
+  </div>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <span class="hero-eyebrow"><i></i> Autonomous quality assurance</span>
+    <h1>Ship with <span>proof</span>, not guesswork.</h1>
+    <p>Turn a user story into an evidence-backed sign-off. GremlinAI plans the tests, drives a real browser, and verifies every critical flow.</p>
+    </section>
+
+  <!-- ── Stage 1: Minimalist Input Configuration Panel ── -->
+  <section class="apple-card config-panel" id="config-panel">
+    <div class="card-header-row">
+      <div>
+        <h2 class="card-title">Test Configuration</h2>
+        <p class="card-subtitle">Define the target URL and acceptance criteria to generate an interactive test plan.</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="apple-btn apple-btn-secondary apple-btn-sm" onclick="loadDemoStory()">
+          ✨ Load Demo Store
+        </button>
+        <button type="button" class="apple-btn apple-btn-ghost apple-btn-sm config-collapse-btn" id="config-collapse-btn" onclick="toggleConfigPanel()" aria-expanded="true" aria-label="Collapse test configuration" title="Collapse test configuration">
+          <span class="collapse-icon">⌃</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="config-body" id="config-body">
+    <div class="form-grid">
+      <div class="form-group flex-2">
+        <label for="url-input">Target Web Application URL</label>
+        <div class="input-container">
+          <input type="url" id="url-input" placeholder="http://localhost:5001 or https://app.example.com" value="http://localhost:5001">
+          <div class="quick-links">
+            <button type="button" class="quick-chip" onclick="setUrl('http://localhost:5001')">:5001</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group flex-1 action-group">
+        <label>&nbsp;</label>
+        <div class="button-cluster">
+          <button id="plan-btn" class="apple-btn apple-btn-primary" onclick="requestPlanDraft()">
+            <span>📋 Draft Test Plan</span>
+          </button>
+          <button id="direct-run-btn" class="apple-btn apple-btn-secondary" onclick="startDirectRun()" title="Skip review and execute immediately">
+            <span>▶ Direct Run</span>
+          </button>
+          <button id="stop-btn" class="apple-btn apple-btn-danger" onclick="stopRun()" style="display:none;">
+            <span>⏹ Stop Test</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top:14px;">
+      <div class="label-row">
+        <label for="story-input">User Story &amp; Acceptance Criteria</label>
+        <span class="label-hint">Narrative + AC1, AC2 numbered requirements</span>
+      </div>
+      <textarea id="story-input" rows="3" placeholder="As a shopper, I can log in, add items to my cart, and check out successfully.&#10;AC1: Valid login takes me to the product catalog.&#10;AC2: The cart total matches the sum of added items.&#10;AC3: Invalid email during checkout displays a validation error.&#10;AC4: Successful checkout displays order confirmation."></textarea>
+    </div>
+
+    <!-- Collapsible Authentication Settings -->
+    <details class="apple-disclosure" id="auth-disclosure" open>
+      <summary>
+        <span class="disclosure-title">
+          <span>🔐 Authentication &amp; Test Credentials</span>
+          <span class="optional-tag">Optional</span>
+        </span>
+        <span class="disclosure-arrow" aria-hidden="true"></span>
+      </summary>
+      <div class="disclosure-body">
+        <div class="auth-notice">
+          <span>⚠️</span>
+          <span>Use test accounts only. Passwords are kept in-memory and scrubbed from all logs.</span>
+        </div>
+        <div class="form-row" style="margin-top:12px;">
+          <div class="form-group flex-1">
+            <label>Login URL</label>
+            <input type="url" id="auth-login-url" placeholder="Leave blank to use target URL">
+          </div>
+          <div class="form-group flex-1">
+            <label>Test Username</label>
+            <input type="text" id="auth-username" value="demo@test.com" autocomplete="off">
+          </div>
+          <div class="form-group flex-1">
+            <label>Test Password</label>
+            <input type="password" id="auth-password" value="pass123" autocomplete="new-password">
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:10px;">
+          <div class="form-group flex-2">
+            <label>Success Indicator Hint</label>
+            <input type="text" id="auth-hint" placeholder="Text or URL fragment visible upon login (e.g. 'Catalog')">
+          </div>
+          <div class="form-group flex-1 checkbox-cell">
+            <label class="apple-checkbox">
+              <input type="checkbox" id="auth-prelogin">
+              <span class="cb-label">Start from an authenticated state (skips login testing)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </details>
+    </div>
+  </section>
+
+  <!-- ── Stage 2: Interactive Test Plan Review & Edit Card ── -->
+  <section class="apple-card plan-review-modal" id="plan-review-card" style="display:none;">
+    <div class="review-header">
+      <div>
+        <div class="review-badge">Step 1 of 2: Review Plan</div>
+        <h2 class="card-title" style="margin-top:4px;">Customize &amp; Confirm Test Plan</h2>
+        <p class="card-subtitle">Review the AI-generated verification steps below. You can edit instructions, modify expected outcomes, add custom steps, or delete steps before executing.</p>
+      </div>
+      <div class="review-top-actions">
+        <button class="apple-btn apple-btn-secondary apple-btn-sm" onclick="requestPlanDraft()">
+          ↻ Re-generate Plan
+        </button>
+        <button class="apple-btn apple-btn-ghost apple-btn-sm" onclick="cancelPlanReview()">
+          ✕ Dismiss
+        </button>
+      </div>
+    </div>
+
+    <!-- Criteria Tags Summary -->
+    <div class="review-criteria-box">
+      <span class="box-label">Target Acceptance Criteria:</span>
+      <div class="criteria-pills-row" id="review-criteria-pills"></div>
+    </div>
+
+    <!-- Editable Steps List -->
+    <div class="editable-steps-container">
+      <div class="steps-list-header">
+        <span class="box-label">Execution Steps:</span>
+        <button class="apple-btn apple-btn-secondary apple-btn-xs" onclick="addNewCustomStep()">
+          + Add Custom Step
+        </button>
+      </div>
+      <div class="editable-steps-list" id="editable-steps-list"></div>
+    </div>
+
+    <!-- Review Footer CTA -->
+    <div class="review-footer">
+      <button class="apple-btn apple-btn-ghost" onclick="cancelPlanReview()">Cancel</button>
+      <button class="apple-btn apple-btn-primary apple-btn-lg" onclick="executeConfirmedPlan()">
+        <span>✓ Confirm &amp; Execute Tests</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ── Stage 3: Split Layout (Live Browser + Step Checklist) ── -->
+  <main class="main-split-view" id="main-split-view">
+
+    <!-- Left: macOS Simulated Browser Window -->
+    <section class="browser-section" id="browser-section">
+      <div class="workspace-panel-heading">
+        <div>
+          <span class="panel-kicker">Evidence workspace</span>
+          <h2>Live preview</h2>
+        </div>
+        <span class="panel-help">Browser actions appear here in real time</span>
+      </div>
+      <div class="macos-browser-window">
+        <!-- Browser Chrome Header -->
+        <div class="macos-titlebar">
+          <div class="traffic-lights">
+            <span class="tl-dot tl-red"></span>
+            <span class="tl-dot tl-yellow"></span>
+            <span class="tl-dot tl-green"></span>
+          </div>
+
+          <div class="browser-nav">
+            <button class="b-btn" disabled>‹</button>
+            <button class="b-btn" disabled>›</button>
+            <button class="b-btn" title="Refresh frame" onclick="triggerFrameRefresh()">↻</button>
+          </div>
+
+          <div class="macos-omnibar">
+            <span class="ssl-icon" id="omnibar-lock">🔒</span>
+            <span class="omnibar-text" id="omnibar-url">http://localhost:5001</span>
+            <span class="omnibar-title" id="omnibar-title">Standby</span>
+          </div>
+
+          <div class="browser-meta">
+            <div class="live-pill" id="live-indicator">
+              <span class="live-dot"></span>
+              <span id="live-text">STANDBY</span>
+            </div>
+            <button class="macos-tool-btn" id="fit-btn" onclick="toggleFitMode()" title="Toggle scaling">⤢ Fit</button>
+            <button class="macos-tool-btn" id="theater-btn" onclick="toggleTheaterMode()" title="Maximize view">⛶ Maximize</button>
+          </div>
+        </div>
+
+        <!-- Viewport Display Container -->
+        <div class="browser-viewport" id="browser-viewport">
+          <div class="viewport-canvas" id="viewport-canvas">
+            <img id="live-frame" src="/static/placeholder.svg" alt="Live browser view">
+
+            <!-- Planning overlay -->
+            <div class="planning-overlay" id="planning-overlay" style="display:none;">
+              <div class="apple-spinner-card">
+                <div class="apple-spinner"></div>
+                <div class="spinner-title">AI Agent Reasoning</div>
+                <div class="spinner-desc" id="planning-subtext">Navigating browser and preparing assertions...</div>
+              </div>
+            </div>
+
+            <!-- Action Banner Overlay -->
+            <div class="action-toast" id="action-toast" style="display:none;">
+              <span class="action-lightning">⚡</span>
+              <span id="action-label">INITIALIZING</span>
+            </div>
+
+            <!-- Bounding Box High-Precision SVG -->
+            <svg id="bbox-svg" class="bbox-svg" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="apple-glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#0071e3" flood-opacity="0.8"/>
+                </filter>
+              </defs>
+              <g id="bbox-group" style="display:none;">
+                <rect id="bbox-rect-bg" fill="rgba(0, 113, 227, 0.15)" rx="4"/>
+                <rect id="bbox-rect" fill="none" stroke="#0071e3" stroke-width="2.5" rx="4" filter="url(#apple-glow)"/>
+                <g id="bbox-label-group">
+                  <rect id="bbox-label-bg" fill="#0071e3" rx="4" height="20"/>
+                  <text id="bbox-label-text" fill="#ffffff" font-size="11" font-weight="600" font-family="-apple-system, sans-serif" y="14" x="6">CLICK</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Step Progress & Visual Evidence Checklist -->
+    <aside class="checklist-section" id="checklist-section">
+      <div class="checklist-header">
+        <div class="checklist-title-row">
+          <div>
+            <span class="panel-kicker">Verification</span>
+            <h3 class="section-title">Test execution</h3>
+          </div>
+          <span class="status-counter-badge" id="plan-status">Ready</span>
+        </div>
+
+        <div class="progress-wrapper">
+          <div class="progress-meta">
+            <span id="progress-text">0 of 0 steps completed</span>
+            <span id="progress-percent">0%</span>
+          </div>
+          <div class="apple-progress-bar">
+            <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acceptance Criteria List -->
+      <div class="section-block">
+        <span class="block-label">Acceptance Criteria</span>
+        <div class="criteria-list" id="criteria-list">
+          <div class="empty-hint">Draft a test plan to see criteria checklist.</div>
+        </div>
+      </div>
+
+      <!-- Execution Steps List with Visual Evidence for EVERY Case -->
+      <div class="section-block" style="flex:1;">
+        <span class="block-label">Steps &amp; Visual Evidence</span>
+        <div class="steps-scroll" id="steps-list">
+          <div class="empty-steps-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">Ready to validate</div>
+            <div class="empty-sub">Draft a test plan above, review it, then run validation to view real-time screenshot evidence.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sign-Off Report CTA Card -->
+      <div class="report-cta-card" id="report-section" style="display:none;">
+        <div class="cta-header">
+          <div class="cta-icon">📄</div>
+          <div>
+            <div class="cta-title">UAT Sign-Off Ready</div>
+            <div class="cta-sub" id="report-status-text">Full traceability report generated</div>
+          </div>
+        </div>
+        <a id="report-link" href="#" target="_blank" class="apple-btn apple-btn-primary apple-btn-block">
+          Open Executive Sign-Off Report
+        </a>
+        <div class="report-downloads" aria-label="Download sign-off report">
+          <a id="report-pdf-link" href="#" class="apple-btn apple-btn-secondary apple-btn-sm" download>
+            Download PDF
+          </a>
+          <a id="report-html-link" href="#" class="apple-btn apple-btn-ghost apple-btn-sm" download>
+            Download HTML
+          </a>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ── Bottom Drawer: Agent Activity ── -->
+  <footer class="bottom-drawer" id="bottom-drawer">
+    <div class="drawer-bar">
+      <div class="drawer-tabs">
+        <button class="drawer-tab active" id="tab-btn-log" aria-label="Agent activity">
+          <span class="activity-pulse"></span>
+          <span>Agent activity</span>
+          <span class="count-badge" id="log-count-badge">0</span>
+        </button>
+        <span class="drawer-description">A clear audit trail of the agent's decisions and results.</span>
+      </div>
+
+      <div class="drawer-controls">
+        <label class="drawer-cb">
+          <input type="checkbox" id="autoscroll-cb" checked>
+          <span>Auto-scroll</span>
+        </label>
+        <button class="apple-btn apple-btn-ghost apple-btn-xs" onclick="copyLogs()">Copy</button>
+        <button class="apple-btn apple-btn-ghost apple-btn-xs" onclick="clearLogs()">Clear</button>
+        <button class="apple-btn apple-btn-ghost apple-btn-xs" onclick="toggleDrawer()" id="drawer-toggle-btn">▲</button>
+      </div>
+    </div>
+
+    <!-- Terminal Logs -->
+    <div class="drawer-content" id="tab-log">
+      <div class="terminal-stream" id="agent-log">
+        <div class="log-row info">
+          <span class="log-time">--:--:--</span>
+          <span class="log-tag tag-info">READY</span>
+          <span class="log-body">GremlinAI initialized. Enter your target URL and story to draft your test plan.</span>
+        </div>
+      </div>
+    </div>
+
+  </footer>
+
+</div>
+
+<!-- ── High-Resolution Screenshot Lightbox Modal ── -->
+<div class="lightbox-overlay" id="lightbox-modal" onclick="closeLightbox(event)">
+  <div class="lightbox-dialog">
+    <div class="lightbox-top">
+      <span class="lightbox-heading" id="lightbox-title">Screenshot Evidence</span>
+      <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    </div>
+    <div class="lightbox-view">
+      <img id="lightbox-img" src="" alt="Screenshot Evidence">
+    </div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+<script src="/static/polish.js"></script>
+
+<!-- ── Verdict overlay ── -->
+<div class="verdict-overlay" id="verdict-overlay" onclick="if(event.target===this)closeVerdict()">
+  <div class="verdict-card">
+    <div class="ring" id="verdict-ring" data-label="0%"></div>
+    <div class="verdict-word" id="verdict-word">APPROVED</div>
+    <div class="verdict-sub" id="verdict-sub"></div>
+    <div class="verdict-stats">
+      <div class="vstat"><b id="vs-passed">0/0</b><span>Steps passed</span></div>
+      <div class="vstat"><b id="vs-bugs">0</b><span>Bugs found</span></div>
+    </div>
+    <div class="verdict-actions">
+      <a id="verdict-report" class="apple-btn apple-btn-primary" target="_blank" href="#">View report</a>
+      <a id="verdict-dl-pdf" class="apple-btn apple-btn-secondary" href="#">Download PDF</a>
+      <a id="verdict-dl-html" class="apple-btn apple-btn-secondary" href="#">Download HTML</a>
+      <button type="button" class="apple-btn apple-btn-secondary" onclick="closeVerdict()">Close</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

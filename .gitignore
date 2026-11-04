@@ -1,0 +1,45 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Python environments, build products, and caches
+.venv/
+venv/
+env/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Runtime data and generated evidence
+runs/
+*.db
+*.sqlite
+*.sqlite3
+playwright-report/
+test-results/
+blob-report/
+
+# Editor and operating-system files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# JavaScript dependencies
+node_modules/
+
+# Documentation
+DECISIONS.md
+DEPLOY.md
+Dockerfile
+render.yaml
+
+

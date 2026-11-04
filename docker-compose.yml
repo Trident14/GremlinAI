@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  gremlinai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./runs:/app/runs
+    depends_on:
+      - demo_app
+
+  demo_app:
+    build:
+      context: ./tests_and_extras/demo_app
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env

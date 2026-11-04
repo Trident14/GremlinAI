@@ -1,0 +1,7 @@
+.venv
+.env
+runs
+*.db
+__pycache__
+.git
+node_modules

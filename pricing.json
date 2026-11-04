@@ -1,0 +1,34 @@
+{
+  "gemini-flash-lite-latest": {
+    "input_per_1m": 0.075,
+    "output_per_1m": 0.3
+  },
+  "gemini-flash-latest": {
+    "input_per_1m": 0.1,
+    "output_per_1m": 0.4
+  },
+  "gemini-2.0-flash-lite": {
+    "input_per_1m": 0.075,
+    "output_per_1m": 0.3
+  },
+  "gemini-2.0-flash": {
+    "input_per_1m": 0.1,
+    "output_per_1m": 0.4
+  },
+  "mock-fast": {
+    "input_per_1m": 0.0,
+    "output_per_1m": 0.0
+  },
+  "mock-vision": {
+    "input_per_1m": 0.0,
+    "output_per_1m": 0.0
+  },
+  "muse-spark-1.3": {
+    "input_per_1m": 1.25,
+    "output_per_1m": 4.25
+  },
+  "muse-spark-1.1": {
+    "input_per_1m": 1.25,
+    "output_per_1m": 4.25
+  }
+}

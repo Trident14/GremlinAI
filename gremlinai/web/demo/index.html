@@ -1,0 +1,47 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Gremlin Shop (demo site)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="style.css"></head><body>
+<header><b>Gremlin <span>Shop</span></b><nav><a href="signup.html">Create account</a> &nbsp; <button class="secondary" id="cart-btn" style="margin:0;display:none">Cart<span class="badge" id="cart-count" aria-label="Cart items">0</span></button></nav></header>
+<main>
+<section id="view-login" class="card"><h1>Log in</h1><p class="sub">Welcome back to Gremlin Shop.</p>
+ <label for="email">Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="off">
+ <label for="password">Password</label><input id="password" type="password" placeholder="Password" autocomplete="off">
+ <button id="login-btn" disabled>Log in</button><div id="login-error" class="err" role="alert"></div>
+ <p class="hint">Demo account: demo@gremlin.test / Passw0rd!</p></section>
+<section id="view-shop" class="card" hidden><h1>Products</h1><p class="sub" id="welcome"></p><div class="grid" id="products"></div></section>
+<section id="view-cart" class="card" hidden><h1>Your cart</h1><div id="cart-items"></div><div class="row"><b>Total</b><b id="cart-total">$0.00</b></div>
+ <h3>Shipping address</h3><label for="address">Street address</label><input id="address" placeholder="123 Main St">
+ <label for="city">City</label><input id="city" placeholder="City"><label for="zip">ZIP code</label><input id="zip" placeholder="ZIP">
+ <button id="place-order">Place order</button> <button class="secondary" id="back-shop">Continue shopping</button><div id="order-error" class="err" role="alert"></div></section>
+<section id="view-done" class="card" hidden><h1>Order confirmed!</h1><p class="ok" id="order-msg"></p><p class="sub">Thank you for shopping at Gremlin Shop.</p></section>
+</main>
+<script>
+// Demo site for GremlinAI. Add ?bugs=off to the URL for a clean (defect-free) version.
+const BUGS = new URLSearchParams(location.search).get('bugs') !== 'off';
+const PRODUCTS = [{id:'mug',name:'Gremlin Mug',price:12},{id:'tee',name:'Gremlin T-Shirt',price:25},{id:'cap',name:'Gremlin Cap',price:18}];
+let cart = [];
+const $ = id => document.getElementById(id);
+const show = v => ['login','shop','cart','done'].forEach(n => $('view-'+n).hidden = n !== v);
+function checkLogin(){ $('login-btn').disabled = !($('email').value.trim() && $('password').value); }
+$('email').addEventListener('input', checkLogin); $('password').addEventListener('input', checkLogin);
+$('login-btn').onclick = () => {
+  if ($('email').value.trim() === 'demo@gremlin.test' && $('password').value === 'Passw0rd!') {
+    $('welcome').textContent = 'Signed in as ' + $('email').value.trim(); $('cart-btn').style.display = ''; show('shop');
+  } else $('login-error').textContent = 'Invalid email or password.';
+};
+$('products').innerHTML = PRODUCTS.map(p => `<div class="item" data-testid="product-${p.id}"><h3>${p.name}</h3><div class="price">$${p.price}.00</div>
+  <button data-id="${p.id}" aria-label="Add ${p.name} to cart">Add to cart</button></div>`).join('');
+$('products').onclick = e => { const id = e.target.dataset && e.target.dataset.id; if (!id) return;
+  cart.push(PRODUCTS.find(p => p.id === id));
+  if (!(BUGS && id === 'mug')) $('cart-count').textContent = cart.length;   // BUG: badge not updated for the mug
+};
+$('cart-btn').onclick = () => { renderCart(); show('cart'); };
+$('back-shop').onclick = () => show('shop');
+function renderCart(){ $('cart-items').innerHTML = cart.length ? cart.map(p => `<div class="row"><span>${p.name}</span><span>$${p.price}.00</span></div>`).join('') : '<p class="sub">Your cart is empty.</p>';
+  $('cart-total').textContent = '$' + cart.reduce((s,p) => s + p.price, 0).toFixed(2); }
+$('place-order').onclick = () => {
+  const missing = !$('address').value.trim() || !$('city').value.trim() || !$('zip').value.trim();
+  if (!cart.length) { $('order-error').textContent = 'Your cart is empty.'; return; }
+  if (missing && !BUGS) { $('order-error').textContent = 'Shipping address is required.'; return; }   // BUG: no validation when bugs are on
+  $('order-msg').textContent = 'Order #1001 placed for ' + cart.length + ' item(s).'; show('done');
+};
+</script></body></html>

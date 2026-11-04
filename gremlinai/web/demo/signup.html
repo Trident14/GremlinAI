@@ -1,0 +1,26 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Create account - Gremlin Shop (demo site)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="style.css"></head><body>
+<header><b>Gremlin <span>Shop</span></b><a href="index.html">Back to log in</a></header>
+<main><section class="card" id="form-card"><h1>Create account</h1><p class="sub">Join Gremlin Shop in a few seconds.</p>
+ <label for="name">Full name</label><input id="name" placeholder="Ada Lovelace"><div class="err" id="name-err" role="alert"></div>
+ <label for="s-email">Email</label><input id="s-email" placeholder="you@example.com"><div class="err" id="email-err" role="alert"></div>
+ <label for="country">Country</label><select id="country"><option value="">Select a country</option><option>India</option><option>United States</option><option>United Kingdom</option></select>
+ <label for="s-pass">Password (min 8 characters)</label><input id="s-pass" type="password"><div class="err" id="pass-err" role="alert"></div>
+ <label><input id="terms" type="checkbox" style="width:auto"> I agree to the terms</label><div class="err" id="terms-err" role="alert"></div>
+ <button id="signup-btn">Create account</button></section>
+ <section class="card" id="success" hidden><h1>Welcome aboard!</h1><p class="ok" id="success-msg"></p></section></main>
+<script>
+// Add ?bugs=off to the URL for a clean version. By default the email check is missing (planted defect).
+const BUGS = new URLSearchParams(location.search).get('bugs') !== 'off';
+const $ = id => document.getElementById(id);
+$('signup-btn').onclick = () => {
+  ['name','email','pass','terms'].forEach(k => $(k+'-err').textContent = '');
+  let ok = true; const email = $('s-email').value.trim();
+  if (!$('name').value.trim()) { $('name-err').textContent = 'Name is required.'; ok = false; }
+  if (!BUGS && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('email-err').textContent = 'Please enter a valid email address.'; ok = false; }  // BUG: skipped when bugs are on
+  if ($('s-pass').value.length < 8) { $('pass-err').textContent = 'Password must be at least 8 characters.'; ok = false; }
+  if (!$('terms').checked) { $('terms-err').textContent = 'You must accept the terms.'; ok = false; }
+  if (!ok) return;
+  $('form-card').hidden = true; $('success').hidden = false; $('success-msg').textContent = 'Account created for ' + $('name').value.trim() + '.';
+};
+</script></body></html>

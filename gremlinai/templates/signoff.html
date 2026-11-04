@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UAT Sign-off Report — {{ run_id }}</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --apple-bg: #f5f5f7;
+    --apple-card: #ffffff;
+    --apple-border: rgba(0, 0, 0, 0.08);
+    --apple-text-main: #1d1d1f;
+    --apple-text-muted: #86868b;
+    --apple-blue: #0071e3;
+    --apple-green: #34c759;
+    --apple-red: #ff3b30;
+    --apple-amber: #ff9500;
+    --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  body {
+    font-family: var(--font-apple);
+    background: var(--apple-bg);
+    color: var(--apple-text-main);
+    padding: 40px 20px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .report-container {
+    max-width: 1040px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ── Hero Card ── */
+  .hero-card {
+    background: var(--apple-card);
+    border: 1px solid var(--apple-border);
+    border-radius: 20px;
+    padding: 32px 36px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .hero-title-group h1 {
+    font-size: 1.85rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--apple-text-main);
+  }
+
+  .hero-meta {
+    font-size: 0.86rem;
+    color: var(--apple-text-muted);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .hero-meta a {
+    color: var(--apple-blue);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .verdict-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 22px;
+    border-radius: 980px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .verdict-banner.APPROVED {
+    background: rgba(52, 199, 89, 0.12);
+    color: #248a3d;
+    border: 1px solid rgba(52, 199, 89, 0.3);
+  }
+
+  .verdict-banner.REJECTED {
+    background: rgba(255, 59, 48, 0.12);
+    color: #d70015;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+  }
+
+  .verdict-banner.NEEDS_REVIEW, .verdict-banner.NEEDS.REVIEW {
+    background: rgba(255, 149, 0, 0.12);
+    color: #b25000;
+    border: 1px solid rgba(255, 149, 0, 0.3);
+  }
+
+  /* ── KPI Grid ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+  }
+
+  .kpi-card {
+    background: #fbfbfd;
+    border: 1px solid var(--apple-border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .kpi-label {
+    font-size: 0.74rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--apple-text-muted);
+  }
+
+  .kpi-val {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--apple-text-main);
+  }
+
+  .kpi-sub {
+    font-size: 0.74rem;
+    color: var(--apple-text-muted);
+  }
+
+  /* ── Section Cards ── */
+  .card-section {
+    background: var(--apple-card);
+    border: 1px solid var(--apple-border);
+    border-radius: 20px;
+    padding: 28px 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .section-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--apple-text-main);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .story-quote {
+    background: #fbfbfd;
+    border: 1px solid var(--apple-border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: #333336;
+    white-space: pre-line;
+  }
+
+  /* ── Traceability Table ── */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.88rem;
+    border: 1px solid var(--apple-border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  th {
+    background: #fbfbfd;
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--apple-text-muted);
+    border-bottom: 1px solid var(--apple-border);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+  }
+
+  td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    vertical-align: top;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 980px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .status-pill.pass {
+    background: rgba(52, 199, 89, 0.12);
+    color: #248a3d;
+  }
+
+  .status-pill.fail {
+    background: rgba(255, 59, 48, 0.12);
+    color: #d70015;
+  }
+
+  .status-pill.needs_review, .status-pill.blocked {
+    background: rgba(255, 149, 0, 0.12);
+    color: #b25000;
+  }
+
+  /* ── Step Evidence Gallery (Every Step) ── */
+  .step-evidence-card {
+    background: #fbfbfd;
+    border: 1px solid var(--apple-border);
+    border-radius: 16px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
+  .step-evidence-card:last-child {
+    margin-bottom: 0;
+  }
+
+  .step-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .step-badge-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .step-id {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.76rem;
+    background: rgba(0, 0, 0, 0.06);
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .step-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .step-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    font-size: 0.84rem;
+    background: #ffffff;
+    border: 1px solid var(--apple-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+
+  .step-evidence-quote {
+    grid-column: 1 / -1;
+    color: #48484a;
+    font-style: italic;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 8px;
+    margin-top: 4px;
+  }
+
+  /* Screenshot Pair Grid */
+  .screenshot-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 4px;
+  }
+
+  .screenshot-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .screenshot-label {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--apple-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .step-img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 10px;
+    border: 1px solid var(--apple-border);
+    background: #000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+
+  .step-img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  }
+
+  .no-img {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px dashed var(--apple-border);
+    border-radius: 10px;
+    color: var(--apple-text-muted);
+    font-size: 0.8rem;
+  }
+
+  /* ── Bug Cards ── */
+  .bug-card {
+    background: #fffafa;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    border-radius: 16px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bug-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .bug-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--apple-red);
+  }
+
+  .bug-severity {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 980px;
+    background: rgba(255, 59, 48, 0.15);
+    color: #d70015;
+  }
+
+  .bug-pre {
+    background: #ffffff;
+    border: 1px solid rgba(255, 59, 48, 0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    color: #1d1d1f;
+  }
+
+  .bug-annotated-img {
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    box-shadow: 0 4px 16px rgba(255, 59, 48, 0.1);
+    margin-top: 6px;
+  }
+
+  /* ── Sign-off Signature Box ── */
+  .signoff-box {
+    background: #fbfbfd;
+    border: 2px dashed #c7c7cc;
+    border-radius: 16px;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .signoff-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    margin-top: 10px;
+  }
+
+  .signoff-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .signoff-line {
+    border-bottom: 1.5px solid #1d1d1f;
+    height: 32px;
+  }
+
+  /* Print Styles */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .hero-card, .card-section { box-shadow: none; border-color: #ddd; page-break-inside: avoid; }
+    .step-img { height: 180px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="report-container">
+
+  <!-- ── Hero Banner ── -->
+  <header class="hero-card">
+    <div class="hero-top-row">
+      <div class="hero-title-group">
+        <h1>Autonomous UAT Sign-off Report</h1>
+        <p class="hero-meta">
+          <span>Executed on {{ date }}</span> &bull;
+          <span>Run <code>{{ run_id }}</code></span> &bull;
+          <a href="{{ url }}" target="_blank">{{ url }}</a>
+        </p>
+      </div>
+      <div class="verdict-banner {{ overall }}">
+        {% if overall == 'APPROVED' %}✓{% elif overall == 'REJECTED' %}✕{% else %}⚠{% endif %} {{ overall }}
+      </div>
+    </div>
+
+    <!-- KPI Metric Summary -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Validation Pass Rate</span>
+        <span class="kpi-val" style="color:{% if pass_rate == 100 %}var(--apple-green){% else %}var(--apple-red){% endif %};">{{ pass_rate }}%</span>
+        <span class="kpi-sub">{{ passed_steps }} of {{ total_steps }} steps verified</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Criteria Traceability</span>
+        <span class="kpi-val">{{ matrix | length }}</span>
+        <span class="kpi-sub">Acceptance criteria evaluated</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Total Execution Time</span>
+        <span class="kpi-val">{{ total_duration_sec }}s</span>
+        <span class="kpi-sub">Across all actions &amp; checks</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">AI Inference Cost</span>
+        <span class="kpi-val">{% if metrics and metrics.total_cost_usd is not none %}${{ "%.4f" | format(metrics.total_cost_usd) }}{% else %}&lt; $0.01{% endif %}</span>
+        <span class="kpi-sub">{{ metrics.provider if metrics else 'gemini' }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── User Story ── -->
+  <section class="card-section">
+    <h2 class="section-heading">Target User Story &amp; Requirements</h2>
+    <div class="story-quote">{{ story }}</div>
+  </section>
+
+  <!-- ── Traceability Matrix ── -->
+  <section class="card-section">
+    <h2 class="section-heading">
+      <span>Acceptance Criteria Traceability Matrix</span>
+      <span style="font-size:0.8rem;font-weight:600;color:var(--apple-text-muted);">{{ matrix | length }} Criteria</span>
+    </h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:120px;">Criterion ID</th>
+          <th>Requirement Description</th>
+          <th style="width:100px;">Steps</th>
+          <th style="width:120px;">Outcome</th>
+          <th>Verification Evidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in matrix %}
+        <tr>
+          <td><strong style="font-family:var(--font-mono);">{{ row.criterion.id }}</strong></td>
+          <td>{{ row.criterion.text }}</td>
+          <td>
+            {% for s in row.steps %}
+              <span style="font-family:var(--font-mono);font-size:0.78rem;">{{ s.id }}</span>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </td>
+          <td><span class="status-pill {{ row.status }}">{{ row.status | upper | replace('_', ' ') }}</span></td>
+          <td style="color:#48484a;font-size:0.84rem;">
+            {% for r in row.results %}
+              <div>&bull; {{ r.verdict.evidence }}</div>
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── Visual Step Evidence Gallery (For EVERY Case) ── -->
+  <section class="card-section">
+    <h2 class="section-heading">
+      <span>Visual Evidence Gallery</span>
+      <span style="font-size:0.8rem;font-weight:600;color:var(--apple-text-muted);">{{ step_records | length }} Verified Steps</span>
+    </h2>
+    <p style="font-size:0.84rem;color:var(--apple-text-muted);margin-top:-8px;">
+      Before and after visual state captured for each test step, demonstrating interactive state changes.
+    </p>
+
+    {% for s in step_records %}
+    <div class="step-evidence-card">
+      <div class="step-top">
+        <div class="step-badge-group">
+          <span class="step-id">{{ s.step.id }}</span>
+          <span class="step-title">{{ s.step.instruction }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:0.75rem;color:var(--apple-text-muted);font-family:var(--font-mono);">{{ s.duration_ms }}ms</span>
+          <span class="status-pill {{ s.status }}">{{ s.status | upper }}</span>
+        </div>
+      </div>
+
+      <div class="step-details-grid">
+        <div><strong>Expected:</strong> {{ s.step.expected }}</div>
+        <div><strong>Actions taken:</strong> {{ s.actions | length }} browser events</div>
+        <div class="step-evidence-quote"><strong>Verification:</strong> {{ s.evidence }}</div>
+      </div>
+
+      <!-- Before and After Screenshots -->
+      <div class="screenshot-pair">
+        <div class="screenshot-box">
+          <span class="screenshot-label">📷 State Before Action</span>
+          {% if s.before_img %}
+            <img class="step-img" src="{{ s.before_img }}" alt="Before {{ s.step.id }}" onclick="openImg(this.src)">
+          {% else %}
+            <div class="no-img">No initial frame captured</div>
+          {% endif %}
+        </div>
+        <div class="screenshot-box">
+          <span class="screenshot-label">📸 State After Verification</span>
+          {% if s.after_img %}
+            <img class="step-img" src="{{ s.after_img }}" alt="After {{ s.step.id }}" onclick="openImg(this.src)">
+          {% else %}
+            <div class="no-img">No post-action frame captured</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <!-- ── Defect Reports (If Any) ── -->
+  {% if bugs %}
+  <section class="card-section">
+    <h2 class="section-heading" style="color:var(--apple-red);">
+      <span>Defects &amp; Discrepancies Detected ({{ bugs | length }})</span>
+      <span class="bug-severity">Blockers for Release</span>
+    </h2>
+
+    {% for bug in bugs %}
+    <div class="bug-card">
+      <div class="bug-header">
+        <span class="bug-title">🐛 Defect {{ loop.index }}: {{ bug.title }}</span>
+        <span class="bug-severity">{{ bug.severity }}</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.84rem;">
+        <div>
+          <strong style="color:var(--apple-text-muted);font-size:0.75rem;text-transform:uppercase;">Expected Outcome</strong>
+          <div class="bug-pre">{{ bug.expected }}</div>
+        </div>
+        <div>
+          <strong style="color:var(--apple-red);font-size:0.75rem;text-transform:uppercase;">Observed Discrepancy</strong>
+          <div class="bug-pre" style="border-color:rgba(255,59,48,0.4);background:#fff5f5;">{{ bug.actual }}</div>
+        </div>
+      </div>
+
+      {% if bug.repro_steps %}
+      <div>
+        <strong style="color:var(--apple-text-muted);font-size:0.75rem;text-transform:uppercase;">Reproduction Steps</strong>
+        <div class="bug-pre">{% for st in bug.repro_steps %}{{ loop.index }}. {{ st }}
+{% endfor %}</div>
+      </div>
+      {% endif %}
+
+      {% if bug.screenshot_file %}
+      <div>
+        <strong style="color:var(--apple-text-muted);font-size:0.75rem;text-transform:uppercase;">Visual Defect Evidence (Annotated)</strong>
+        <div>
+          <img class="bug-annotated-img" src="{{ bug.screenshot_file }}" alt="Annotated Bug Screenshot" style="cursor:zoom-in" onclick="openImg(this.src)">
+        </div>
+      </div>
+      {% endif %}
+
+      {% if bug.console_errors %}
+      <div>
+        <strong style="color:var(--apple-text-muted);font-size:0.75rem;text-transform:uppercase;">Captured Console Errors</strong>
+        <div class="bug-pre" style="color:#b91c1c;">{% for err in bug.console_errors %}{{ err }}
+{% endfor %}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <!-- ── Formal Sign-off Section ── -->
+  <section class="card-section">
+    <div class="signoff-box">
+      <h3 style="font-size:1.05rem;font-weight:700;">Formal Reviewer Sign-Off</h3>
+      <p style="font-size:0.84rem;color:var(--apple-text-muted);">
+        By signing below, the designated reviewers acknowledge the verification outcomes detailed above.
+      </p>
+
+      <div class="signoff-grid">
+        <div class="signoff-col">
+          <span style="font-size:0.78rem;font-weight:600;color:var(--apple-text-muted);">QA Lead Sign-off</span>
+          <div class="signoff-line"></div>
+          <span style="font-size:0.74rem;color:var(--apple-text-muted);">Signature &amp; Date</span>
+        </div>
+        <div class="signoff-col">
+          <span style="font-size:0.78rem;font-weight:600;color:var(--apple-text-muted);">Product Owner Sign-off</span>
+          <div class="signoff-line"></div>
+          <span style="font-size:0.74rem;color:var(--apple-text-muted);">Signature &amp; Date</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="lb" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);align-items:center;justify-content:center;cursor:zoom-out;">
+  <img id="lb-img" style="max-width:94vw;max-height:94vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.6)">
+</div>
+<script>
+function openImg(src){ if(!src) return; document.getElementById('lb-img').src = src; document.getElementById('lb').style.display = 'flex'; }
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.getElementById('lb').style.display = 'none'; });
+</script>
+</body>
+</html>
