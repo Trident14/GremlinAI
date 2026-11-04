@@ -1,3 +1,6 @@
+# GremlinAI
+
+**Autonomous UAT with evidence, not guesswork.** Give GremlinAI a web application URL and a user story; it plans an acceptance-test journey, operates a real browser, verifies the result at every step, and produces an executive-ready UAT sign-off report.
 ---
 title: GremlinAI
 emoji: 👾
@@ -8,9 +11,6 @@ app_port: 8000
 pinned: false
 ---
 
-# GremlinAI
-
-**Autonomous UAT with evidence, not guesswork.** Give GremlinAI a web application URL and a user story; it plans an acceptance-test journey, operates a real browser, verifies the result at every step, and produces an executive-ready UAT sign-off report.
 
 Built for the [Meta Global AI Developer Hackathon](https://cerebralvalley.ai/e/meta-ai-developer-hackathon) using Meta Model API-compatible models.
 
